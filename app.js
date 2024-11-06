@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import logger from './config/logger.js';
 import sequelize from './config/db.js';
 import User from './models/User.js';
 import dotenv from 'dotenv';
@@ -20,5 +21,12 @@ sequelize.sync().then(() => {
     console.error('Error syncing database:', err);
 })
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Ensure the app only starts the server if it's not in test mode
+if (process.env.NODE_ENV !== 'test') {
+    const PORT = process.env.PORT || 5000; // Default to 5000 if PORT is not set
+    app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+}
+
+
+export default app;
