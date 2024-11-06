@@ -16,13 +16,27 @@ export const registerUser = async (req, res) => {
       if (!name || !email || !password) {
         return res.status(400).json({ errors: 'All fields are required.' });
       }
-  
-      // Create new user in the database
-      const user = await User.create({ name, email, password });
-  
+
+    // Check if the email already exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+        return res.status(400).json({ message: 'Email already in use' });
+    }
+
+    // Hash the password before saving it
+    const salt = await bcrypt.genSalt(10);  // Generate a salt (10 rounds is a good default)
+    const hashedPassword = await bcrypt.hash(password, salt);  // Hash the password with the salt
+
+    // Create new user with hashed password
+    const user = await User.create({ name, email, password: hashedPassword });
+
       return res.status(201).json({
         message: 'User created successfully!',
-        user,
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+        },
       });
     } catch (err) {
       if (err.name === 'SequelizeUniqueConstraintError') {
@@ -48,11 +62,13 @@ export const loginUser = async (req, res) => {
         const user = await User.findOne({ where: { email } });
 
         if (!user) {
-            return res.status(400).json({ message: 'User not found' });
+            return res.status(400).json({ message: 'User not found' }); // No change here
         }
 
+        // Check if password matches
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            // This should be the message for incorrect password
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
