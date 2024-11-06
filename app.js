@@ -9,12 +9,13 @@ import userRoutes from './routes/userRoutes.js';
 dotenv.config(); // Load .env variables
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
+app.use(express.json()); // Middleware to parse JSON request bodies
 
+// Register user routes
 app.use('/api/users', userRoutes);
 
-// Sync the database
+// Sync the database and log the status
 sequelize.sync().then(() => {
     console.log('DB synced :)')
 }).catch(err => {

@@ -12,12 +12,12 @@ export const registerUser = async (req, res) => {
     try {
       const { name, email, password } = req.body;
   
-      // Example validation (can be replaced with your actual validation library like Joi or express-validator)
+      // Basic validation: Check that all fields are provided
       if (!name || !email || !password) {
         return res.status(400).json({ errors: 'All fields are required.' });
       }
   
-      // Attempt to create a new user
+      // Create new user in the database
       const user = await User.create({ name, email, password });
   
       return res.status(201).json({
