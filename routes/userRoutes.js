@@ -1,10 +1,11 @@
 import { check } from 'express-validator';
 import express from 'express';  // ES module import
 import { registerUser, loginUser, getUser, getAllUsers } from '../controllers/userController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// POST route for user registration with validation and sanitization
+// POST route for user registration with validation and sanitization (no auth required)
 router.post(
   '/register',
   [
@@ -15,13 +16,13 @@ router.post(
   registerUser
 );
 
-// POST route for user login
+// POST route for user login (no auth required)
 router.post('/login', loginUser);
 
-// GET route for fetching a user by ID
-router.get('/user/:id', getUser); 
+// Protected GET route for fetching a user by ID (requires auth)
+router.get('/user/:id', authMiddleware, getUser); 
 
-// Define GET route for fetching all users
-router.get('/', getAllUsers); 
+// Protected  GET route for fetching all users (requires auth)
+router.get('/', authMiddleware, getAllUsers); 
 
 export default router;

@@ -72,7 +72,62 @@ describe('User API', () => {
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toBe('Email must be unique');
+      expect(res.body.message).toBe('Email already in use');
+    });
+  });
+
+  describe('POST /api/users/login', () => {
+    let testEmail, testPassword;
+
+    beforeAll(async () => {
+      // Create a user before testing login
+      testEmail = generateUniqueEmail();
+      testPassword = 'password123';
+
+      // Register the user before running the login tests
+      await request(app)
+        .post('/api/users/register')
+        .send({
+          name: 'John Doe',
+          email: testEmail,
+          password: testPassword,
+        });
+    });
+
+    it('should return 400 if user not found', async () => {
+      const res = await request(app)
+        .post('/api/users/login')
+        .send({
+          email: 'nonexistent@example.com',
+          password: 'password123',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('User not found');
+    });
+
+    it('should return 400 if password is incorrect', async () => {
+      const res = await request(app)
+        .post('/api/users/login')
+        .send({
+          email: testEmail,
+          password: 'wrongpassword', // Incorrect password
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('Invalid credentials');
+    });
+
+    it('should return 200 and a token if login is successful', async () => {
+      const res = await request(app)
+        .post('/api/users/login')
+        .send({
+          email: testEmail,
+          password: testPassword, // Correct password
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.token).toBeDefined();  // Ensure token is returned
     });
   });
 });
